@@ -21,7 +21,7 @@ Cypress.Commands.add('clicar_botao', () => {
 })
 
 Cypress.Commands.add('validar_visualização_conta_logada', () => {
-	cy.get(login_Intranet_Localizadores.barra_de_ususario_logado())
+	cy.get(login_Intranet_Localizadores.barra_de_usuario_logado())
 		.should('be.visible')
 		.and('contain', 'Olá, ')
 })
