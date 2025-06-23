@@ -91,5 +91,3 @@ export class Visualizar_Noticia_Publicada_Localizadores {
 	botao_enviar_comentario = () => '#submit'
 	mensagem_obrigatoria_comentario = () => '.comment-form .acf-error-message'
 }
-
-//export default { Adicionar_Noticia_Localizadores, Menu_Noticias_Localizadores }
