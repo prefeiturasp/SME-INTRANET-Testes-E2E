@@ -22,5 +22,23 @@
       Quando eu clico na URL da notícia criada
       Então devo visualizar a notícia publicada no portal da intranet
 
+      @validar_noticia_criada
+
+      Cenário: Deve validar exibição do título da notícia publicada no portal da intranet
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a notícia criada na intranet
+      Então devo visualizar a exibição do título da notícia publicada no portal da intranet
+
+      Cenário: Deve validar exibição do subtítulo da notícia publicada no portal da intranet
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a notícia criada na intranet
+      Então devo visualizar a exibição do subtítulo da notícia publicada no portal da intranet
+
+      Cenário: Deve validar validar exibição do corpo da notícia publicada no portal da intranet
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a notícia criada na intranet
+      Então devo visualizar a exibição do corpo da notícia publicada no portal da intranet
+
+
 
       
