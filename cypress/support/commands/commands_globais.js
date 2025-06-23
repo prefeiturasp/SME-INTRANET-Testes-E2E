@@ -13,10 +13,12 @@ Cypress.Commands.add('configurar_visualizacao', (device) => {
 })
 
 Cypress.Commands.add('realizar_login_intranet', () => {
-	const usuario = Cypress.env('intranet').usuario
-	const senha = Cypress.env('intranet').senha
-	cy.visit('/')
-	cy.get(login_Intranet_Localizadores.campo_usuario()).type(usuario)
-	cy.get(login_Intranet_Localizadores.campo_senha()).type(senha)
-	cy.clicar_botao()
+	cy.session('sessão-intranet', () => {
+		const usuario = Cypress.env('intranet').usuario
+		const senha = Cypress.env('intranet').senha
+		cy.visit('/')
+		cy.get(login_Intranet_Localizadores.campo_usuario()).type(usuario)
+		cy.get(login_Intranet_Localizadores.campo_senha()).type(senha)
+		cy.clicar_botao()
+	})
 })

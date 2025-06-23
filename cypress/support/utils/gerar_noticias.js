@@ -3,10 +3,10 @@ faker.locale = 'pt_BR'
 
 function gerarNoticia() {
 	const noticia = {
-		titulo: faker.lorem.sentence(),
-		subtitulo: faker.lorem.sentence(),
-		conteudo: faker.lorem.paragraphs(3, '\n\n'),
-		resumo: faker.lorem.sentences(2),
+		titulo: faker.lorem.words(2),
+		subtitulo: faker.lorem.words(2),
+		conteudo: faker.lorem.words(2),
+		resumo: faker.lorem.words(2),
 	}
 	return noticia
 }

@@ -9,9 +9,15 @@ Cypress.Commands.add('login_intranet', (device) => {
 
 Cypress.Commands.add('dados_de_login', (usuario, senha) => {
 	usuario
-		? cy.get(login_Intranet_Localizadores.campo_usuario()).type(usuario)
+		? cy
+				.get(login_Intranet_Localizadores.campo_usuario())
+				.type(usuario, { force: true })
 		: ''
-	senha ? cy.get(login_Intranet_Localizadores.campo_senha()).type(senha) : ''
+	senha
+		? cy
+				.get(login_Intranet_Localizadores.campo_senha())
+				.type(senha, { force: true })
+		: ''
 })
 
 Cypress.Commands.add('clicar_botao', () => {
