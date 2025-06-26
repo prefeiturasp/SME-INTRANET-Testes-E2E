@@ -9,9 +9,15 @@ Cypress.Commands.add('login_intranet', (device) => {
 
 Cypress.Commands.add('dados_de_login', (usuario, senha) => {
 	usuario
-		? cy.get(login_Intranet_Localizadores.campo_usuario()).type(usuario)
+		? cy
+				.get(login_Intranet_Localizadores.campo_usuario())
+				.type(usuario, { force: true })
 		: ''
-	senha ? cy.get(login_Intranet_Localizadores.campo_senha()).type(senha) : ''
+	senha
+		? cy
+				.get(login_Intranet_Localizadores.campo_senha())
+				.type(senha, { force: true })
+		: ''
 })
 
 Cypress.Commands.add('clicar_botao', () => {
@@ -21,7 +27,7 @@ Cypress.Commands.add('clicar_botao', () => {
 })
 
 Cypress.Commands.add('validar_visualização_conta_logada', () => {
-	cy.get(login_Intranet_Localizadores.barra_de_ususario_logado())
+	cy.get(login_Intranet_Localizadores.barra_de_usuario_logado())
 		.should('be.visible')
 		.and('contain', 'Olá, ')
 })
