@@ -15,7 +15,9 @@ pipeline {
     }
 
     environment {
-        WORKSPACE_DIR = "${env.WORKSPACE}" // Pega dinamicamente o path correto
+        TEST_DIR = "${env.WORKSPACE}"
+        ALLURE_PATH = 'allure-results'
+        WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
     stages {
@@ -57,23 +59,26 @@ pipeline {
             }
         }
 
-        stage('Generate Allure Report') {
+         stage('Generate Allure Report') {
             steps {
                 script {
-                    sh '''
-                        java -version
-                        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                        export PATH=$JAVA_HOME/bin:/usr/local/bin:$PATH
-                        echo "JAVA_HOME=$JAVA_HOME"
-                        echo "PATH=$PATH"
-                        npm install -g allure-commandline --save-dev
-                        chmod -R 777 $WORKSPACE_DIR/allure-results || true
-                        allure generate $WORKSPACE_DIR/allure-results --clean --output $WORKSPACE_DIR/allure-report
-                        if [ -f $WORKSPACE_DIR/allure-report.zip ]; then
-                            rm -f $WORKSPACE_DIR/allure-report.zip
-                        fi
-                        cd $WORKSPACE_DIR && zip -r allure-results-${BUILD_NUMBER}-$(date +"%d-%m-%Y").zip allure-results
-                    '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                        def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
+
+                        if (hasResults) {
+                            echo "Gerando relatório Allure..."
+                            sh """
+                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java))))
+                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
+
+                                allure generate ${ALLURE_PATH} --clean --output tests/api/allure-report
+                                cd tests/api
+                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
+                            """
+                        } else {
+                            echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório."
+                        }
+                    }
                 }
             }
         }
