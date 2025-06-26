@@ -17,6 +17,7 @@ pipeline {
     environment {
         TEST_DIR = "${env.WORKSPACE}"
         ALLURE_PATH = 'allure-results'
+        REPORT_PATH = 'allure-report'
         WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
@@ -73,7 +74,7 @@ pipeline {
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java))))
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
 
-                                allure generate ${ALLURE_PATH} --clean --output allure-report
+                                allure generate ${ALLURE_PATH} --clean --output ${REPORT_PATH}
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip ${ALLURE_PATH}
                             """
                         } else {
@@ -84,4 +85,21 @@ pipeline {
             }
         }
     }
-} 
+
+    post {
+        always {
+            script {
+                sh 'chmod -R 777 $WORKSPACE_DIR'
+
+                // Arquiva relatório zipado se existir
+                def zipFile = "allure-results-${env.BUILD_NUMBER}-$(date +\"%d-%m-%Y\").zip"
+                if (fileExists(zipFile)) {
+                    archiveArtifacts artifacts: zipFile, fingerprint: true
+                }
+
+                // (Opcional) Integrar com Allure Plugin, se instalado no Jenkins
+                // allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+            }
+        }
+    }
+}
