@@ -1,5 +1,6 @@
-pipeline {
-    triggers { cron('30 20 * * 0-5') }
+    triggers {
+        cron('30 20 * * 0-5')
+    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20'))
@@ -15,7 +16,9 @@ pipeline {
     }
 
     environment {
-        WORKSPACE_DIR = "${env.WORKSPACE}" // Pega dinamicamente o path correto
+        TEST_DIR = 'tests/api'
+        ALLURE_PATH = 'tests/api/allure-results'
+        WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
     stages {
@@ -27,7 +30,7 @@ pipeline {
 
         stage('Instalar Dependências') {
             steps {
-                script {
+                dir("${TEST_DIR}") {
                     sh '''
                         rm -rf node_modules package-lock.json
                         npm cache clean --force
@@ -45,14 +48,18 @@ pipeline {
 
         stage('Executar') {
             steps {
-                script {
-                    sh '''
-                        NO_COLOR=1 npx cypress run \
-                            --headless \
-                            --spec cypress/e2e/**/* \
-                            --reporter mocha-allure-reporter \
-                            --browser chrome
-                    '''
+                dir("${TEST_DIR}") {
+                    script {
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            sh '''
+                                NO_COLOR=1 npx cypress run \
+                                    --headless \
+                                    --spec cypress/e2e/**/* \
+                                    --browser chrome \
+                                    --reporter mocha-allure-reporter
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -60,20 +67,23 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 script {
-                    sh '''
-                        java -version
-                        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-                        export PATH=$JAVA_HOME/bin:/usr/local/bin:$PATH
-                        echo "JAVA_HOME=$JAVA_HOME"
-                        echo "PATH=$PATH"
-                        npm install -g allure-commandline --save-dev
-                        chmod -R 777 $WORKSPACE_DIR/allure-results || true
-                        allure generate $WORKSPACE_DIR/allure-results --clean --output $WORKSPACE_DIR/allure-report
-                        if [ -f $WORKSPACE_DIR/allure-report.zip ]; then
-                            rm -f $WORKSPACE_DIR/allure-report.zip
-                        fi
-                        cd $WORKSPACE_DIR && zip -r allure-results-${BUILD_NUMBER}-$(date +"%d-%m-%Y").zip allure-results
-                    '''
+                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
+                        def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
+
+                        if (hasResults) {
+                            echo "Gerando relatório Allure..."
+                            sh """
+                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java))))
+                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
+
+                                allure generate ${ALLURE_PATH} --clean --output tests/api/allure-report
+                                cd tests/api
+                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
+                            """
+                        } else {
+                            echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório."
+                        }
+                    }
                 }
             }
         }
@@ -82,14 +92,26 @@ pipeline {
     post {
         always {
             script {
-                sh 'chmod -R 777 $WORKSPACE_DIR'
-                if (currentBuild.result == 'SUCCESS' || currentBuild.result == 'FAILURE') {
-                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-                    archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
+                sh 'chmod -R 777 $WORKSPACE/tests/api || true'
+
+                // Envio para o plugin Allure (se houver resultados)
+                if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
+                    allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+                } else {
+                    echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
+                }
+
+                // Arquivamento do zip (só se o zip realmente existir)
+                def zipExists = sh(script: "ls tests/api/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+                if (zipExists) {
+                    archiveArtifacts artifacts: 'tests/api/allure-results-*.zip', fingerprint: true
+                } else {
+                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
                 }
             }
         }
 
+        
         success {
             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
         }
@@ -103,24 +125,25 @@ pipeline {
         }
 
         aborted {
-            sendTelegram ("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
+            sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
         }
+        
     }
 }
 
-def sendTelegram(message) {
-    def encodedMessage = URLEncoder.encode(message, "UTF-8")
-    withCredentials([
-        string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
-        string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
-    ]) {
-        response = httpRequest (
-            consoleLogResponseBody: true,
-            contentType: 'APPLICATION_JSON',
-            httpMode: 'GET',
-            url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
-            validResponseCodes: '200'
-        )
-        return response
+    def sendTelegram(message) {
+        def encodedMessage = URLEncoder.encode(message, "UTF-8")
+        withCredentials([
+            string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
+            string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
+        ]) {
+            response = httpRequest (
+                consoleLogResponseBody: true,
+                contentType: 'APPLICATION_JSON',
+                httpMode: 'GET',
+                url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
+                validResponseCodes: '200'
+            )
+            return response
+        }
     }
-}
