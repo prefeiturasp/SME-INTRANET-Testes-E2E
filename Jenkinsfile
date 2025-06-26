@@ -77,7 +77,7 @@ pipeline {
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java))))
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
 
-                                allure generate ${ALLURE_PATH} --clean --output tests/api/allure-report
+                                allure generate ${ALLURE_PATH} --clean --output allure-report
                                 cd tests/api
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
                             """
@@ -93,7 +93,7 @@ pipeline {
     post {
         always {
             script {
-                sh 'chmod -R 777 $WORKSPACE/tests/api || true'
+                sh 'chmod -R 777 $WORKSPACE || true'
 
                 // Envio para o plugin Allure (se houver resultados)
                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
@@ -103,9 +103,9 @@ pipeline {
                 }
 
                 // Arquivamento do zip (só se o zip realmente existir)
-                def zipExists = sh(script: "ls tests/api/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+                def zipExists = sh(script: "ls allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
                 if (zipExists) {
-                    archiveArtifacts artifacts: 'tests/api/allure-results-*.zip', fingerprint: true
+                    archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
                 } else {
                     echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
                 }
@@ -132,19 +132,19 @@ pipeline {
     }
 }
 
-    def sendTelegram(message) {
-        def encodedMessage = URLEncoder.encode(message, "UTF-8")
-        withCredentials([
-            string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
-            string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
-        ]) {
-            response = httpRequest (
-                consoleLogResponseBody: true,
-                contentType: 'APPLICATION_JSON',
-                httpMode: 'GET',
-                url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
-                validResponseCodes: '200'
-            )
-            return response
-        }
-    }
+    // def sendTelegram(message) {
+    //     def encodedMessage = URLEncoder.encode(message, "UTF-8")
+    //     withCredentials([
+    //         string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
+    //         string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
+    //     ]) {
+    //         response = httpRequest (
+    //             consoleLogResponseBody: true,
+    //             contentType: 'APPLICATION_JSON',
+    //             httpMode: 'GET',
+    //             url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
+    //             validResponseCodes: '200'
+    //         )
+    //         return response
+    //     }
+    // }
