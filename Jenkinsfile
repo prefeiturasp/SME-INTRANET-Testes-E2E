@@ -86,19 +86,20 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            script {
-                sh 'chmod -R 777 $WORKSPACE_DIR'
+        post {
+            always {
+                script {
+                    sh 'chmod -R 777 $WORKSPACE_DIR'
 
-                // Arquiva relatório zipado se existir
-                def zipFile = "allure-results-${env.BUILD_NUMBER}-$(date +\"%d-%m-%Y\").zip"
-                if (fileExists(zipFile)) {
-                    archiveArtifacts artifacts: zipFile, fingerprint: true
+                    // Arquiva relatório zipado se existir
+                    def zipFile = "allure-results-${env.BUILD_NUMBER}-$(date +\"%d-%m-%Y\").zip"
+                    if (fileExists(zipFile)) {
+                        archiveArtifacts artifacts: zipFile, fingerprint: true
+                    }
+
+                    // (Opcional) Integrar com Allure Plugin, se instalado no Jenkins
+                    // allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
                 }
-
-                // (Opcional) Integrar com Allure Plugin, se instalado no Jenkins
-                // allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
             }
         }
     }
