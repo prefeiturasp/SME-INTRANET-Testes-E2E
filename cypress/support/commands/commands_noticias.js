@@ -1,10 +1,12 @@
 import {
 	Adicionar_Noticia_Localizadores,
+	Lista_Noticias_Localizadores,
 	Visualizar_Noticia_Publicada_Localizadores,
 } from '../locators/noticias_locators'
 import 'cypress-iframe'
 
 const adicionar_Noticia_Localizadores = new Adicionar_Noticia_Localizadores()
+const lista_Noticias_Localizadores = new Lista_Noticias_Localizadores()
 const visualizar_Noticia_Publicada_Localizadores =
 	new Visualizar_Noticia_Publicada_Localizadores()
 
@@ -38,6 +40,35 @@ Cypress.Commands.add('preencher_resumo', (resumo) => {
 	cy.get(adicionar_Noticia_Localizadores.campo_resumo()).focus().type(resumo)
 })
 
+Cypress.Commands.add('editar_titulo', (titulo) => {
+	cy.get(adicionar_Noticia_Localizadores.campo_titulo()).clear().type(titulo, {
+		force: true,
+	})
+})
+Cypress.Commands.add('editar_subtitulo', (subtitulo) => {
+	cy.get(adicionar_Noticia_Localizadores.campo_subtitulo())
+		.focus()
+		.clear()
+		.type(subtitulo, {
+			force: true,
+		})
+})
+
+Cypress.Commands.add('editar_conteudo_noticia', (conteudo) => {
+	cy.frameLoaded(adicionar_Noticia_Localizadores.iframe_conteudo_visual())
+	cy.iframe(adicionar_Noticia_Localizadores.iframe_conteudo_visual())
+		.clear()
+		.focus()
+		.type(conteudo, { force: true })
+})
+
+Cypress.Commands.add('editar_resumo', (resumo) => {
+	cy.get(adicionar_Noticia_Localizadores.campo_resumo())
+		.focus()
+		.clear()
+		.type(resumo)
+})
+
 Cypress.Commands.add('clicar_botao_publicar', () => {
 	cy.intercept('/wp-admin/admin-ajax.php').as('plublicacaoNoticia')
 	cy.get(adicionar_Noticia_Localizadores.botao_publicar())
@@ -52,7 +83,7 @@ Cypress.Commands.add('clicar_link_permanente', () => {
 		.click()
 })
 
-Cypress.Commands.add('obter_link_da_nova_noticia', () => {
+Cypress.Commands.add('obter_link_da_noticia', () => {
 	cy.get(adicionar_Noticia_Localizadores.link_permanente())
 		.should('be.visible')
 		.invoke('attr', 'href')
@@ -60,13 +91,32 @@ Cypress.Commands.add('obter_link_da_nova_noticia', () => {
 			Cypress.env('urlNoticia', href)
 		})
 })
+Cypress.Commands.add('obter_link_da_noticia_editada', () => {
+	cy.get(adicionar_Noticia_Localizadores.link_permanente())
+		.should('be.visible')
+		.invoke('attr', 'href')
+		.then((href) => {
+			Cypress.env('urlNoticiaEditada', href)
+		})
+})
 Cypress.Commands.add('visitar_noticia_criada', () => {
 	cy.visit(Cypress.env('urlNoticia'))
+})
+Cypress.Commands.add('visitar_noticia_editada', () => {
+	cy.visit(Cypress.env('urlNoticiaEditada'))
+})
+Cypress.Commands.add('visitar_listagem_noticias_intranet', () => {
+	cy.visit('wp-admin/edit.php?post_type=noticia')
 })
 
 Cypress.Commands.add('validar_mensagem_sucesso_ao_postar_noticia', () => {
 	cy.get(adicionar_Noticia_Localizadores.mensagem_sucesso())
 		.contains('Post publicado.')
+		.should('be.visible')
+})
+Cypress.Commands.add('validar_mensagem_sucesso_ao_atualizar_noticia', () => {
+	cy.get(adicionar_Noticia_Localizadores.mensagem_sucesso())
+		.contains('Post atualizado.')
 		.should('be.visible')
 })
 Cypress.Commands.add('validar_mensagem_obrigatoriedade_campo_subtitulo', () => {
@@ -89,3 +139,28 @@ Cypress.Commands.add('validar_conteudo_noticia_publicada', (conteudo) => {
 		.contains(conteudo)
 		.should('be.visible')
 })
+Cypress.Commands.add(
+	'validar_exibicao_noticia_na_listagem_intranet',
+	(tituloNoticia) => {
+		cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
+			force: true,
+		})
+		cy.get(lista_Noticias_Localizadores.botao_buscar()).click()
+		cy.get(lista_Noticias_Localizadores.celula_posts())
+			.contains(tituloNoticia)
+			.should('be.visible')
+	},
+)
+Cypress.Commands.add(
+	'acessar_noticia_na_listagem_intranet',
+	(tituloNoticia) => {
+		cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
+			force: true,
+		})
+		cy.get(lista_Noticias_Localizadores.botao_buscar()).click()
+		cy.get(lista_Noticias_Localizadores.celula_posts())
+			.contains(tituloNoticia)
+			.should('be.visible')
+			.click()
+	},
+)
