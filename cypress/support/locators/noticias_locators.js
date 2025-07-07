@@ -91,3 +91,72 @@ export class Visualizar_Noticia_Publicada_Localizadores {
 	botao_enviar_comentario = () => '#submit'
 	mensagem_obrigatoria_comentario = () => '.comment-form .acf-error-message'
 }
+
+export class Lista_Noticias_Localizadores {
+	// Barra superior / Opções de tela
+	botao_opcoes_tela = () => '#show-settings-link'
+	aba_opcoes_tela = () => '#screen-options-wrap'
+	botao_aplicar_opcoes_tela = () => '#screen-options-apply'
+
+	// Caixa de busca
+	campo_busca = () => '#post-search-input'
+	botao_buscar = () => '#search-submit'
+
+	// Ações em massa (topo)
+	select_acoes_massa_top = () => '#bulk-action-selector-top'
+	botao_aplicar_massa_top = () => '#doaction'
+
+	// Ações em massa (rodapé)
+	select_acoes_massa_bot = () => '#bulk-action-selector-bottom'
+	botao_aplicar_massa_bot = () => '#doaction2'
+
+	// Filtros por categoria
+	select_categoria_filtro = () => '#categorias-noticias'
+	botao_filtrar = () => '#post-query-submit'
+
+	// Paginação
+	input_pagina_atual = () => '#current-page-selector'
+	info_total_paginas = () => '.total-pages'
+	botao_pagina_proxima = () => '.next-page'
+	botao_pagina_ultima = () => '.last-page'
+	contador_itens = () => '.displaying-num'
+
+	// Seletor "marcar todos"
+	checkbox_selecionar_todos_top = () => '#cb-select-all-1'
+	checkbox_selecionar_todos_bot = () => '#cb-select-all-2'
+
+	// Tabela de posts
+	tabela_posts = () => '.wp-list-table.posts'
+	linhas_posts = () => '#the-list > tr'
+	celula_posts = () => '#the-list > tr > td'
+	linha_por_id = (id) => `#post-${id}`
+
+	// Colunas / cabeçalhos clicáveis
+	cabecalho_titulo = () => 'th#title a'
+	cabecalho_autor = () => 'th#author'
+	cabecalho_categorias = () => 'th#categorias'
+	cabecalho_comentarios = () => 'th#comments a'
+	cabecalho_data = () => 'th#date a'
+
+	// Checkbox individual de cada post
+	checkbox_post_por_id = (id) => `#cb-select-${id}`
+
+	// Ações de linha (hover)
+	link_editar_por_id = (id) => `#post-${id} .row-actions .edit a`
+	link_visualizar_por_id = (id) => `#post-${id} .row-actions .view a`
+	link_lixeira_por_id = (id) => `#post-${id} .row-actions .trash a`
+
+	// Inline-edit / Quick edit
+	linha_edicao_rapida = () => '#inline-edit'
+	campo_titulo_quick_edit = () => '#inline-edit input[name="post_title"]'
+	campo_slug_quick_edit = () => '#inline-edit input[name="post_name"]'
+	select_autor_quick_edit = () => '#inline-edit select[name="post_author"]'
+	select_status_quick_edit = () => '#inline-edit select[name="_status"]'
+	botao_salvar_quick_edit = () => '#inline-edit .save'
+	botao_cancelar_quick_edit = () => '#inline-edit .cancel'
+
+	// Bulk-edit
+	form_bulk_edit = () => '#bulk-edit'
+	botao_salvar_bulk_edit = () => '#bulk_edit'
+	botao_cancelar_bulk_edit = () => '#bulk-edit .cancel'
+}

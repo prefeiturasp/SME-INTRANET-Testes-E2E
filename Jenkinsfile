@@ -1,6 +1,6 @@
 pipeline {
     triggers {
-        cron('30 20 * * 0-5')
+        cron('00 21 * * 0-4')
     }
 
     options {
@@ -17,8 +17,6 @@ pipeline {
     }
 
     environment {
-        TEST_DIR = "${env.WORKSPACE}"
-        ALLURE_PATH = "${env.WORKSPACE}/allure-results"
         WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
@@ -31,7 +29,7 @@ pipeline {
 
         stage('Instalar Dependências') {
             steps {
-                dir("${TEST_DIR}") {
+                script {
                     sh '''
                         rm -rf node_modules package-lock.json
                         npm cache clean --force
@@ -49,41 +47,33 @@ pipeline {
 
         stage('Executar') {
             steps {
-                dir("${TEST_DIR}") {
-                    catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                        sh '''
-                            NO_COLOR=1 npx cypress run \
-                                --headless \
-                                --spec cypress/e2e/**/* \
-                                --browser chrome \
-                                --reporter mocha-allure-reporter
-                        '''
-                    }
-                }
+                sh '''
+                    NO_COLOR=1 npx cypress run \
+                        --headless \
+                        --spec cypress/e2e/**/* \
+                        --reporter mocha-allure-reporter \
+                        --browser chrome
+                '''
             }
         }
 
-        stage('Gerar Allure Report') {
+        stage('Generate Allure Report') {
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
-                        def hasResults = fileExists("${ALLURE_PATH}") && sh(
-                            script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true
-                        ).trim() != "0"
-
-                        if (hasResults) {
-                            echo "Gerando relatório Allure..."
-                            sh """
-                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java))))
-                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
-
-                                allure generate ${ALLURE_PATH} --clean --output allure-report
-                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
-                            """
-                        } else {
-                            echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório."
-                        }
-                    }
+                    sh '''
+                        java -version
+                        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+                        export PATH=$JAVA_HOME/bin:/usr/local/bin:$PATH
+                        echo "JAVA_HOME=$JAVA_HOME"
+                        echo "PATH=$PATH"
+                        npm install -g allure-commandline --save-dev
+                        chmod -R 777 $WORKSPACE_DIR/allure-results || true
+                        allure generate $WORKSPACE_DIR/allure-results --clean --output $WORKSPACE_DIR/allure-report
+                        if [ -f $WORKSPACE_DIR/allure-report.zip ]; then
+                            rm -f $WORKSPACE_DIR/allure-report.zip
+                        fi
+                        cd $WORKSPACE_DIR && zip -r allure-results-${BUILD_NUMBER}-$(date +"%d-%m-%Y").zip allure-results
+                    '''
                 }
             }
         }
@@ -92,21 +82,18 @@ pipeline {
     post {
         always {
             script {
-                sh 'chmod -R 777 $WORKSPACE || true'
-
-                // Envio para o plugin Allure
-                if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-                    allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+                sh 'chmod -R 777 $WORKSPACE_DIR'
+                if (fileExists("$WORKSPACE_DIR/allure-results") && sh(script: "ls -A $WORKSPACE_DIR/allure-results | wc -l", returnStdout: true).trim() != "0") {
+                    allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
                 } else {
-                    echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
+                    echo "⚠️ Nenhum resultado do Allure encontrado ou está vazio."
                 }
 
-                // Arquiva o zip
                 def zipExists = sh(script: "ls allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
                 if (zipExists) {
                     archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
                 } else {
-                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
+                    echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
                 }
             }
         }
@@ -114,12 +101,15 @@ pipeline {
         success {
             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
         }
+
         unstable {
             sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
         }
+
         failure {
             sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
         }
+
         aborted {
             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
         }
@@ -132,7 +122,7 @@ def sendTelegram(message) {
         string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
         string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
     ]) {
-        response = httpRequest (
+        response = httpRequest(
             consoleLogResponseBody: true,
             contentType: 'APPLICATION_JSON',
             httpMode: 'GET',
