@@ -105,6 +105,9 @@ Cypress.Commands.add('visitar_noticia_criada', () => {
 Cypress.Commands.add('visitar_noticia_editada', () => {
 	cy.visit(Cypress.env('urlNoticiaEditada'))
 })
+Cypress.Commands.add('visitar_noticia_excluida', () => {
+	cy.visit(Cypress.env('urlNoticiaEditada'), { failOnStatusCode: false })
+})
 Cypress.Commands.add('visitar_listagem_noticias_intranet', () => {
 	cy.visit('wp-admin/edit.php?post_type=noticia')
 })
@@ -152,6 +155,28 @@ Cypress.Commands.add(
 	},
 )
 Cypress.Commands.add(
+	'validar_sucesso_exclusao_noticia_da_listagem_intranet',
+	() => {
+		cy.get(lista_Noticias_Localizadores.mensagem_sucesso())
+			.contains('1 post movido para a lixeira. ')
+			.should('be.visible')
+	},
+)
+Cypress.Commands.add(
+	'validar_nao_exibicao_noticia_na_listagem_intranet',
+	() => {
+		cy.get(lista_Noticias_Localizadores.celula_posts())
+			.contains('Nenhum registro encontrado')
+			.should('be.visible')
+			.click()
+	},
+)
+Cypress.Commands.add('validar_nao_exibicao_pagina_da_noticia', () => {
+	cy.get(visualizar_Noticia_Publicada_Localizadores.erro_404())
+		.contains('error')
+		.should('be.visible')
+})
+Cypress.Commands.add(
 	'acessar_noticia_na_listagem_intranet',
 	(tituloNoticia) => {
 		cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
@@ -162,5 +187,27 @@ Cypress.Commands.add(
 			.contains(tituloNoticia)
 			.should('be.visible')
 			.click()
+	},
+)
+Cypress.Commands.add(
+	'pesquisar_noticia_na_listagem_intranet',
+	(tituloNoticia) => {
+		cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
+			force: true,
+		})
+		cy.get(lista_Noticias_Localizadores.botao_buscar()).click()
+	},
+)
+Cypress.Commands.add(
+	'enviar_noticia_para_lixeira_intranet',
+	(tituloNoticia) => {
+		cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
+			force: true,
+		})
+		cy.get(lista_Noticias_Localizadores.botao_buscar()).click()
+		cy.get(lista_Noticias_Localizadores.link_lixeira())
+			.should('be.visible')
+			.click({ force: true })
+		cy.on('window:confirm', () => true)
 	},
 )

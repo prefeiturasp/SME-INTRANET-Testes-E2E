@@ -33,6 +33,10 @@ Dado('eu publiquei uma notícia', () => {
 	cy.clicar_botao_publicar()
 })
 
+Dado('eu acesso a listagem de noticias no wp-admin', () => {
+	cy.realizar_login_intranet()
+	cy.visitar_listagem_noticias_intranet()
+})
 //----------------------------E----------------------------------------//
 
 E('acesso a página de adição de notícias', () => {
@@ -66,6 +70,9 @@ Quando('eu acesso a notícia criada na intranet', () => {
 Quando('eu acesso a notícia editada na intranet', () => {
 	cy.visitar_noticia_editada()
 })
+Quando('eu acesso a notícia excluida na intranet', () => {
+	cy.visitar_noticia_excluida()
+})
 Quando('eu acesso a listagem de notícias na intranet', () => {
 	cy.visitar_listagem_noticias_intranet()
 })
@@ -82,6 +89,16 @@ Quando('edito todos os campos do formulário', () => {
 	cy.editar_subtitulo(editarNoticia.subtitulo)
 	cy.editar_conteudo_noticia(editarNoticia.conteudo)
 	cy.editar_resumo(editarNoticia.resumo)
+})
+Quando('eu envio a noticia para a lixeira', () => {
+	cy.enviar_noticia_para_lixeira_intranet(editarNoticia.titulo)
+})
+Quando('eu pesquiso a noticia que foi enviada para a lixeira', () => {
+	cy.visitar_listagem_noticias_intranet()
+	cy.pesquisar_noticia_na_listagem_intranet(editarNoticia.titulo)
+})
+Quando('eu acesso a pagina da notícia que foi enviada para a lixeira', () => {
+	cy.visitar_noticia_excluida()
 })
 
 //----------------------------Então----------------------------------------//
@@ -136,6 +153,9 @@ Entao(
 		cy.validar_titulo_noticia_publicada(editarNoticia.titulo)
 	},
 )
+Entao('não devo visualizar a exibição da notícia no portal da intranet', () => {
+	cy.validar_nao_exibicao_pagina_da_noticia()
+})
 
 Entao(
 	'devo visualizar a exibição do subtítulo da notícia editada no portal da intranet',
@@ -149,6 +169,12 @@ Entao(
 		cy.validar_conteudo_noticia_publicada(editarNoticia.conteudo)
 	},
 )
+Entao('devo visualizar a mensagem de exclusão da notícia com sucesso', () => {
+	cy.validar_sucesso_exclusao_noticia_da_listagem_intranet()
+})
+Entao('não devo visualizar a notícia na listagem', () => {
+	cy.validar_nao_exibicao_noticia_na_listagem_intranet()
+})
 
 //----------------------------Hooks----------------------------------------//
 
@@ -168,3 +194,5 @@ Before({ tags: '@validar_noticia_editada' }, () => {
 	cy.acessar_noticia_na_listagem_intranet(editarNoticia.titulo)
 	cy.obter_link_da_noticia_editada()
 })
+
+Before({ tags: '@validar_exclusao_noticia' }, () => {})
