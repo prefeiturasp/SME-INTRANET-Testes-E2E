@@ -51,6 +51,9 @@ E('acesso uma notícia publicada', () => {
 	cy.visitar_listagem_noticias_intranet()
 	cy.acessar_noticia_na_listagem_intranet(novaNoticia.titulo)
 })
+E('excluo a notícia permanente', () => {
+	cy.excluir_noticia_permanentemente(editarNoticia.titulo)
+})
 
 //----------------------------Quando----------------------------------------//
 
@@ -99,6 +102,10 @@ Quando('eu pesquiso a noticia que foi enviada para a lixeira', () => {
 })
 Quando('eu acesso a pagina da notícia que foi enviada para a lixeira', () => {
 	cy.visitar_noticia_excluida()
+})
+Quando('eu acesso a lixeira', () => {
+	cy.visitar_listagem_noticias_intranet()
+	cy.acessar_lixo_noticia()
 })
 
 //----------------------------Então----------------------------------------//
@@ -172,6 +179,12 @@ Entao(
 Entao('devo visualizar a mensagem de exclusão da notícia com sucesso', () => {
 	cy.validar_sucesso_exclusao_noticia_da_listagem_intranet()
 })
+Entao(
+	'devo visualizar a mensagem informando que o post foi excluído permanentemente',
+	() => {
+		cy.validar_sucesso_exclusao_permanente_noticia()
+	},
+)
 Entao('não devo visualizar a notícia na listagem', () => {
 	cy.validar_nao_exibicao_noticia_na_listagem_intranet()
 })
