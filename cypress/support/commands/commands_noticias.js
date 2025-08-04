@@ -158,10 +158,15 @@ Cypress.Commands.add(
 	'validar_sucesso_exclusao_noticia_da_listagem_intranet',
 	() => {
 		cy.get(lista_Noticias_Localizadores.mensagem_sucesso())
-			.contains('1 post movido para a lixeira. ')
+			.contains('1 post movido para a lixeira.')
 			.should('be.visible')
 	},
 )
+Cypress.Commands.add('validar_sucesso_exclusao_permanente_noticia', () => {
+	cy.get(lista_Noticias_Localizadores.mensagem_sucesso())
+		.contains('1 post excluído permanentemente.')
+		.should('be.visible')
+})
 Cypress.Commands.add(
 	'validar_nao_exibicao_noticia_na_listagem_intranet',
 	() => {
@@ -189,6 +194,11 @@ Cypress.Commands.add(
 			.click()
 	},
 )
+Cypress.Commands.add('acessar_lixo_noticia', () => {
+	cy.get(lista_Noticias_Localizadores.acessar_lixos())
+		.should('be.visible')
+		.click()
+})
 Cypress.Commands.add(
 	'pesquisar_noticia_na_listagem_intranet',
 	(tituloNoticia) => {
@@ -211,3 +221,13 @@ Cypress.Commands.add(
 		cy.on('window:confirm', () => true)
 	},
 )
+Cypress.Commands.add('excluir_noticia_permanentemente', (tituloNoticia) => {
+	cy.get(lista_Noticias_Localizadores.campo_busca()).type(tituloNoticia, {
+		force: true,
+	})
+	cy.get(lista_Noticias_Localizadores.botao_buscar()).click()
+	cy.get(lista_Noticias_Localizadores.excluir_permanentemente())
+		.should('be.visible')
+		.click({ force: true })
+	cy.on('window:confirm', () => true)
+})

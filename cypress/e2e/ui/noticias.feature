@@ -80,10 +80,16 @@
       Quando eu pesquiso a noticia que foi enviada para a lixeira
       Então não devo visualizar a notícia na listagem
 
-      Cenário: Deve validar a remoção da página da  notícia que foi enviada para a lixeira
+      Cenário: Deve validar a remoção da página da notícia que foi enviada para a lixeira
       Dado eu realizo login na intranet no wp-admin
       Quando eu acesso a pagina da notícia que foi enviada para a lixeira
       Então não devo visualizar a exibição da notícia no portal da intranet
+
+      Cenário: Deve validar a exclusão permanente da página da notícia que foi enviada para a lixeira
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a lixeira
+      E excluo a notícia permanente
+      Então devo visualizar a mensagem informando que o post foi excluído permanentemente
 
 
 

@@ -116,6 +116,7 @@ export class Lista_Noticias_Localizadores {
 	// Filtros por categoria
 	select_categoria_filtro = () => '#categorias-noticias'
 	botao_filtrar = () => '#post-query-submit'
+	acessar_lixos = () => '.subsubsub .trash a'
 
 	// Paginação
 	input_pagina_atual = () => '#current-page-selector'
@@ -149,6 +150,7 @@ export class Lista_Noticias_Localizadores {
 	link_visualizar_por_id = (id) => `#post-${id} .row-actions .view a`
 	link_lixeira_por_id = (id) => `#post-${id} .row-actions .trash a`
 	link_lixeira = () => `.row-actions .trash a`
+	excluir_permanentemente = () => `.delete .submitdelete`
 
 	// Inline-edit / Quick edit
 	linha_edicao_rapida = () => '#inline-edit'
