@@ -47,16 +47,34 @@ pipeline {
 
         stage('Executar') {
             steps {
-                sh '''
-                    NO_COLOR=1 npx cypress run \
-                        --headless \
-                        --spec cypress/e2e/**/* \
-                        --reporter mocha-allure-reporter \
-                        --browser chrome
-                '''
+                script {
+                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                        sh '''
+                            docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                            docker run \
+                                --rm \
+                                -v "$WORKSPACE:/app" \
+                                -w /app \
+                                registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                                sh -c "rm -rf package-lock.json node_modules/ || true && \
+                                        npm install && npm install cypress@14.5.2 cypress-cloud@beta && \
+                                        npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                        rm -rf allure-results/ && \
+                                        npx cypress-cloud run \
+                                            --browser chrome \
+                                            --headed true \
+                                            --record \
+                                            --key somekey \
+                                            --reporter mocha-allure-reporter \
+                                            --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                        chown 1001:1001 * -R && chmod 777 * -R"
+                        '''
+                    }
+
+                    echo "FIM DOS TESTES!"
+                }
             }
         }
-
         stage('Generate Allure Report') {
             steps {
                 script {
