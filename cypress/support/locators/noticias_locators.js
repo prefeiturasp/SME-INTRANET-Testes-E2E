@@ -81,6 +81,9 @@ export class Visualizar_Noticia_Publicada_Localizadores {
 	subtitulo = () => '.content-article .sub-titulo'
 	conteudo_principal = () => '.content-article p:nth-of-type(2)'
 
+	// Erro
+	erro_404 = () => '.error'
+
 	// Lista de notícias recentes (seção lateral)
 	titulo_noticias_recentes = () => '.news-recents h3'
 	lista_noticias_recentes = () => '.noticias-recentes .recado'
@@ -113,6 +116,7 @@ export class Lista_Noticias_Localizadores {
 	// Filtros por categoria
 	select_categoria_filtro = () => '#categorias-noticias'
 	botao_filtrar = () => '#post-query-submit'
+	acessar_lixos = () => '.subsubsub .trash a'
 
 	// Paginação
 	input_pagina_atual = () => '#current-page-selector'
@@ -145,6 +149,8 @@ export class Lista_Noticias_Localizadores {
 	link_editar_por_id = (id) => `#post-${id} .row-actions .edit a`
 	link_visualizar_por_id = (id) => `#post-${id} .row-actions .view a`
 	link_lixeira_por_id = (id) => `#post-${id} .row-actions .trash a`
+	link_lixeira = () => `.row-actions .trash a`
+	excluir_permanentemente = () => `.delete .submitdelete`
 
 	// Inline-edit / Quick edit
 	linha_edicao_rapida = () => '#inline-edit'
@@ -159,4 +165,7 @@ export class Lista_Noticias_Localizadores {
 	form_bulk_edit = () => '#bulk-edit'
 	botao_salvar_bulk_edit = () => '#bulk_edit'
 	botao_cancelar_bulk_edit = () => '#bulk-edit .cancel'
+
+	//Mensagens
+	mensagem_sucesso = () => '#message'
 }
