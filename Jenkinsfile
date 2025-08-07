@@ -26,24 +26,6 @@ pipeline {
             }
         }
 
-        stage('Instalar Dependências') {
-            steps {
-                script {
-                    sh '''
-                        rm -rf node_modules package-lock.json
-                        npm cache clean --force
-                        mkdir -p /home/jenkins/.cache/Cypress
-                        chmod -R 777 /home/jenkins/.cache/Cypress
-                        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc >/dev/null
-                        mkdir -p /usr/share/man/man1/
-                        apt update && apt install -y default-jre openjdk-17-jdk zip
-                        npm install
-                        npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev
-                    '''
-                }
-            }
-        }
-
         stage('Executar') {
             steps {
                 script {
