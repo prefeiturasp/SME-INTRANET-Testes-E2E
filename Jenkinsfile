@@ -10,10 +10,7 @@ pipeline {
     }
 
     agent {
-        kubernetes {
-            label 'cypress'
-            defaultContainer 'cypress-13-6-6'
-        }
+        label 'cypress-node'
     }
 
     environment {
