@@ -38,7 +38,6 @@ pipeline {
                                 -w /app \
                                 registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
                                 sh -c "rm -rf package-lock.json node_modules/ || true && \
-<<<<<<< HEAD
                                        npm install && \
                                        npm install cypress@14.5.2 cypress-cloud@beta && \
                                        npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
@@ -51,21 +50,6 @@ pipeline {
                                            --reporter mocha-allure-reporter \
                                            --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
                                        chown 1001:1001 * -R && chmod 777 * -R"
-=======
-                                        npm install && npm install cypress@14.5.2 cypress-cloud@beta && \
-                                        npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                        rm -rf allure-results/ && \
-                                        npx cypress-cloud run \
-                                            --parallel \
-                                            --browser chrome \
-                                            --headed true \
-                                            --record \
-                                            --key somekey \
-                                            --reporter mocha-allure-reporter \
-                                            --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                        chown 1001:1001 * -R
-                                        chmod 777 * -R"
->>>>>>> 1dab9c12af4b46dda844a9c20ec5253bc4def82e
                         '''
                     }
 
@@ -79,70 +63,58 @@ pipeline {
                 script {
                     def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
-                        if (hasResults) {
-                            echo "Gerando relatório Allure..."
-                            sh """
-                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
-                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
-                                allure generate ${ALLURE_PATH} --clean --output allure-report
-                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
-                            """
-                        } else {
-                            echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório."
-                        }
+                    if (hasResults) {
+                        echo "Gerando relatório Allure..."
+                        sh """
+                            export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
+                            export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
+
+                            allure generate ${ALLURE_PATH} --clean --output cypress/allure-report
+                            cd cypress
+                            zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
+                        """
+                    } else {
+                        error "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Falha na geração do relatório Allure."
                     }
                 }
             }
         }
     }
 
-    // post {
-    //     always {
-    //         script {
-    //             withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-    //                 sh '''
-    //                     docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-    //                     docker run \
-    //                         --rm \
-    //                         -v "$WORKSPACE:/app" \
-    //                         -w /app \
-    //                         registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-    //                         sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
-    //                 '''
-    //             }
+//     post {
+//         always {
+//             script {
+//                 def hasAllure = fileExists("${ALLURE_PATH}") &&
+//                     sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
-    //             if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-    //                 allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
-    //             } else {
-    //                 echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
-    //             }
+//                 if (hasAllure) {
+//                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+//                 } else {
+//                     echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
+//                 }
 
-    //             def zipExists = sh(script: "ls allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
-    //             if (zipExists) {
-    //                 archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
-    //             } else {
-    //                 echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
-    //             }
-    //         }
-    //     }
+//                 def zipExists = sh(script: "ls ${TEST_DIR}/allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+//                 if (zipExists) {
+//                     archiveArtifacts artifacts: "${TEST_DIR}/allure-results-*.zip", fingerprint: true
+//                 } else {
+//                     echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
+//                 }
+//             }
+//         }
 
-        // success {
-        //     sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
-        // }
+//         success {
+//             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
+//         }
 
-        // unstable {
-        //     sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
-        // }
+//         failure {
+//             sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
+//         }
 
-        // failure {
-        //     sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
-        // }
-
-        // aborted {
-        //     sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
-        // }
-    }
-}
+//         aborted {
+//             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
+//         }
+//     }
+// }
 
 // def sendTelegram(message) {
 //     def encodedMessage = URLEncoder.encode(message, "UTF-8")
@@ -159,8 +131,4 @@ pipeline {
 //         )
 //         return response
 //     }
-<<<<<<< HEAD
 }
-=======
-// }
->>>>>>> 1dab9c12af4b46dda844a9c20ec5253bc4def82e
