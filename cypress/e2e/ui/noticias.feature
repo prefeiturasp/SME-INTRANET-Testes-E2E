@@ -39,7 +39,6 @@
       Quando eu acesso a notícia criada na intranet
       Então devo visualizar a exibição do corpo da notícia publicada no portal da intranet
 
-
       Cenário: Deve validar exibição da notícia criada na listagem da intranet
       Dado eu realizo login na intranet no wp-admin
       Quando eu acesso a listagem de notícias na intranet
@@ -69,7 +68,28 @@
       Quando eu acesso a notícia editada na intranet
       Então devo visualizar a exibição do corpo da notícia editada no portal da intranet
 
+      @validar_exclusao_noticia
 
+      Cenário: Deve validar envio da notícia para a lixeira
+      Dado eu acesso a listagem de noticias no wp-admin
+      Quando eu envio a noticia para a lixeira
+      Então devo visualizar a mensagem de exclusão da notícia com sucesso
+
+      Cenário: Deve validar a não exibição da notícia que foi enviada para a lixeira
+      Dado eu acesso a listagem de noticias no wp-admin
+      Quando eu pesquiso a noticia que foi enviada para a lixeira
+      Então não devo visualizar a notícia na listagem
+
+      Cenário: Deve validar a remoção da página da notícia que foi enviada para a lixeira
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a pagina da notícia que foi enviada para a lixeira
+      Então não devo visualizar a exibição da notícia no portal da intranet
+
+      Cenário: Deve validar a exclusão permanente da página da notícia que foi enviada para a lixeira
+      Dado eu realizo login na intranet no wp-admin
+      Quando eu acesso a lixeira
+      E excluo a notícia permanente
+      Então devo visualizar a mensagem informando que o post foi excluído permanentemente
 
 
 
