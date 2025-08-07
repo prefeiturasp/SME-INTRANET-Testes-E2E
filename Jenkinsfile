@@ -14,6 +14,8 @@ pipeline {
     }
 
     environment {
+        TEST_DIR = 'cypress'
+        ALLURE_PATH = 'allure-results'
         WORKSPACE_DIR = "${env.WORKSPACE}"
     }
 
