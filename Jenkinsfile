@@ -70,9 +70,7 @@ pipeline {
                             sh """
                                 export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
                                 export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
-
-                                allure generate ${ALLURE_PATH} --clean --output cypress/allure-report
-                                cd cypress
+                                allure generate ${ALLURE_PATH} --clean --output allure-report
                                 zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
                             """
                         } else {
@@ -98,6 +96,19 @@ pipeline {
                             sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
                     '''
                 }
+            }
+
+            if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
+                allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
+            } else {
+                echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
+            }
+
+            def zipExists = sh(script: "ls allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
+            if (zipExists) {
+                archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
+            } else {
+                echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento. Pulando archiveArtifacts."
             }
         }
 
