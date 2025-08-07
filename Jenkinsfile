@@ -82,40 +82,40 @@ pipeline {
         }
     }
 
-//     post {
-//         always {
-//             script {
-//                 withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-//                     sh '''
-//                         docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-//                         docker run \
-//                             --rm \
-//                             -v "$WORKSPACE:/app" \
-//                             -w /app \
-//                             registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-//                             sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
-//                     '''
-//                 }
-//             }
-//         }
+    post {
+        always {
+            script {
+                withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                    sh '''
+                        docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                        docker run \
+                            --rm \
+                            -v "$WORKSPACE:/app" \
+                            -w /app \
+                            registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                            sh -c "rm -rf package-lock.json node_modules/ || true && chown 1001:1001 * -R || true  && chmod 777 * -R || true"
+                    '''
+                }
+            }
+        }
 
-//         success {
-//             sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
-//         }
+        // success {
+        //     sendTelegram("☑️ Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Success \nLog: \n${env.BUILD_URL}allure")
+        // }
 
-//         unstable {
-//             sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
-//         }
+        // unstable {
+        //     sendTelegram("💣 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Unstable \nLog: \n${env.BUILD_URL}allure")
+        // }
 
-//         failure {
-//             sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
-//         }
+        // failure {
+        //     sendTelegram("💥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Failure \nLog: \n${env.BUILD_URL}allure")
+        // }
 
-//         aborted {
-//             sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
-//         }
-//     }
-// }
+        // aborted {
+        //     sendTelegram("😥 Job Name: ${JOB_NAME} \nBuild: ${BUILD_DISPLAY_NAME} \nStatus: Aborted \nLog: \n${env.BUILD_URL}console")
+        // }
+    }
+}
 
 // def sendTelegram(message) {
 //     def encodedMessage = URLEncoder.encode(message, "UTF-8")
@@ -132,4 +132,4 @@ pipeline {
 //         )
 //         return response
 //     }
-}
+// }
