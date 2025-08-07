@@ -42,13 +42,15 @@ pipeline {
                                         npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
                                         rm -rf allure-results/ && \
                                         npx cypress-cloud run \
+                                            --parallel \
                                             --browser chrome \
                                             --headed true \
                                             --record \
                                             --key somekey \
                                             --reporter mocha-allure-reporter \
                                             --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                        chown 1001:1001 * -R && chmod 777 * -R"
+                                        chown 1001:1001 * -R
+                                        chmod 777 * -R"
                         '''
                     }
 
