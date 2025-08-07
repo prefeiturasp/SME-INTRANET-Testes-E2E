@@ -29,31 +29,33 @@ pipeline {
         stage('Executar') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
-                        sh '''
-                            docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
-                            docker run \
-                                --rm \
-                                -v "$WORKSPACE:/app" \
-                                -w /app \
-                                registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
-                                sh -c "rm -rf package-lock.json node_modules/ || true && \
-                                       npm install && \
-                                       npm install cypress@14.5.2 cypress-cloud@beta && \
-                                       npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
-                                       rm -rf allure-results/ && \
-                                       npx cypress-cloud run \
-                                           --browser chrome \
-                                           --headed true \
-                                           --record \
-                                           --key somekey \
-                                           --reporter mocha-allure-reporter \
-                                           --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
-                                       chown 1001:1001 * -R && chmod 777 * -R"
-                        '''
-                    }
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                        withDockerRegistry(credentialsId: 'jenkins_registry', url: 'https://registry.sme.prefeitura.sp.gov.br/repository/sme-registry/') {
+                            sh '''
+                                docker pull registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2
+                                docker run \
+                                    --rm \
+                                    -v "$WORKSPACE:/app" \
+                                    -w /app \
+                                    registry.sme.prefeitura.sp.gov.br/devops/cypress-agent:14.5.2 \
+                                    sh -c "rm -rf package-lock.json node_modules/ || true && \
+                                           npm install && \
+                                           npm install cypress@14.5.2 cypress-cloud@beta && \
+                                           npm install @shelex/cypress-allure-plugin allure-mocha crypto-js@4.1.1 --save-dev && \
+                                           rm -rf allure-results/ && \
+                                           npx cypress-cloud run \
+                                               --browser chrome \
+                                               --headed true \
+                                               --record \
+                                               --key somekey \
+                                               --reporter mocha-allure-reporter \
+                                               --ci-build-id SME-INTRANET_JENKINS-BUILD-${BUILD_NUMBER} && \
+                                           chown 1001:1001 * -R && chmod 777 * -R"
+                            '''
+                        }
 
-                    echo "FIM DOS TESTES!"
+                        echo "FIM DOS TESTES!"
+                    }
                 }
             }
         }
@@ -61,7 +63,8 @@ pipeline {
         stage('Generate Allure Report') {
             steps {
                 script {
-                    def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
+                    def hasResults = fileExists("${ALLURE_PATH}") &&
+                                     sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
                     if (hasResults) {
                         echo "Gerando relatório Allure..."
@@ -74,7 +77,7 @@ pipeline {
                             zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
                         """
                     } else {
-                        error "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Falha na geração do relatório Allure."
+                        echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório Allure."
                     }
                 }
             }
@@ -85,7 +88,7 @@ pipeline {
 //         always {
 //             script {
 //                 def hasAllure = fileExists("${ALLURE_PATH}") &&
-//                     sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
+//                                 sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
 //                 if (hasAllure) {
 //                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
