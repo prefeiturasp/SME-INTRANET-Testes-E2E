@@ -56,44 +56,25 @@ pipeline {
                 }
             }
         }
-
-        stage('Generate Allure Report') {
-            steps {
-                script {
-                    catchError(stageResult: 'FAILURE') {
-                        def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
-
-                        if (hasResults) {
-                            echo "Gerando relatório Allure..."
-                            sh """
-                                export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
-                                export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
-                                allure generate ${ALLURE_PATH} --clean --output allure-report
-                                zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
-                            """
-                        } else {
-                            echo "⚠️ Diretório ${ALLURE_PATH} está ausente ou vazio. Pulando geração do relatório."
-                        }
-                    }
-                }
-            }
-        }
     }
 
 //     post {
 //         always {
 //             script {
-//                 if (fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0") {
-//                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
-//                 } else {
-//                     echo "⚠️ Resultados do Allure não encontrados ou vazios, plugin Allure não será acionado."
-//                 }
+//                 echo "📊 Gerando relatório Allure..."
+//                 def hasResults = fileExists("${ALLURE_PATH}") && sh(script: "ls -A ${ALLURE_PATH} | wc -l", returnStdout: true).trim() != "0"
 
-//                 def zipExists = sh(script: "ls allure-results-*.zip 2>/dev/null || true", returnStdout: true).trim()
-//                 if (zipExists) {
+//                 if (hasResults) {
+//                     sh """
+//                         export JAVA_HOME=\$(dirname \$(dirname \$(readlink -f \$(which java)))); \
+//                         export PATH=\$JAVA_HOME/bin:/usr/local/bin:\$PATH
+//                         allure generate ${ALLURE_PATH} --clean --output allure-report
+//                         zip -r allure-results-${BUILD_NUMBER}-\$(date +"%d-%m-%Y").zip allure-results
+//                     """
+//                     allure includeProperties: false, jdk: '', results: [[path: "${ALLURE_PATH}"]]
 //                     archiveArtifacts artifacts: 'allure-results-*.zip', fingerprint: true
 //                 } else {
-//                     echo "⚠️ Nenhum .zip de Allure encontrado para arquivamento."
+//                     echo "⚠️ Nenhum resultado do Allure encontrado."
 //                 }
 //             }
 //         }
@@ -118,13 +99,12 @@ pipeline {
 //         string(credentialsId: 'telegramTokensigpae', variable: 'TOKEN'),
 //         string(credentialsId: 'telegramChatIdsigpae', variable: 'CHAT_ID')
 //     ]) {
-//         response = httpRequest (
+//         httpRequest (
 //             consoleLogResponseBody: true,
 //             contentType: 'APPLICATION_JSON',
 //             httpMode: 'GET',
 //             url: "https://api.telegram.org/bot${TOKEN}/sendMessage?text=${encodedMessage}&chat_id=${CHAT_ID}&disable_web_page_preview=true",
 //             validResponseCodes: '200'
 //         )
-//         return response
 //     }
 }
