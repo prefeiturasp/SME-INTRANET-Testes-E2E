@@ -4,14 +4,13 @@ const allureWriter = require('@shelex/cypress-allure-plugin/writer');
 const { cloudPlugin } = require('cypress-cloud/plugin');
 
 module.exports = defineConfig({
-  e2e: {
-    setupNodeEvents(on, config) {
-      // Suporte ao Cucumber
-      on('file:preprocessor', cucumber());
+	e2e: {
+		setupNodeEvents(on, config) {
+			// Suporte ao Cucumber
+			on('file:preprocessor', cucumber())
 
-      // Suporte ao Allure
-      allureWriter(on, config);
-
+			// Suporte ao Allure
+			allureWriter(on, config)
       return cloudPlugin(on, config);
     },
     specPattern: 'cypress/e2e/**/**/*.{feature,cy.{js,jsx,ts,tsx}}',
