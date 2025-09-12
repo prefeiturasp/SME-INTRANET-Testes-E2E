@@ -23,15 +23,13 @@ Dado('eu realizo login na intranet no wp-admin', () => {
 	cy.realizar_login_intranet()
 })
 
-// Dado('eu publiquei uma notícia', () => {
-// 	cy.realizar_login_intranet()
-// 	cy.ir_para_formulario_adicionar_noticias()
-// 	cy.preencher_titulo(novaNoticia.titulo)
-// 	cy.preencher_subtitulo(novaNoticia.subtitulo)
-// 	cy.preencher_conteudo_noticia(novaNoticia.conteudo)
-// 	cy.preencher_resumo(novaNoticia.resumo)
-// 	cy.clicar_botao_publicar()
-// })
+Dado('eu publiquei uma página', () => {
+	cy.realizar_login_intranet()
+	cy.ir_para_formulario_adicionar_paginas()
+	cy.preencher_titulo_pagina(novaPagina.titulo)
+	cy.preencher_conteudo_pagina(novaPagina.conteudo)
+	cy.clicar_botao_publicar()
+})
 
 // Dado('eu acesso a listagem de noticias no wp-admin', () => {
 // 	cy.realizar_login_intranet()
@@ -57,15 +55,9 @@ E('clico no botão publicar', () => {
 
 //----------------------------Quando----------------------------------------//
 
-// Quando('eu não preencho o campo subtitulo', () => {
-// 	cy.preencher_titulo(novaNoticia.titulo)
-// 	cy.preencher_conteudo_noticia(novaNoticia.conteudo)
-// 	cy.preencher_resumo(novaNoticia.resumo)
-// })
-
-// Quando('eu clico na URL da notícia criada', () => {
-// 	cy.clicar_link_permanente()
-// })
+Quando('eu clico na URL da página criada', () => {
+	cy.clicar_link_permanente_pagina()
+})
 
 // Quando('eu acesso a notícia criada na intranet', () => {
 // 	cy.visitar_noticia_criada()
@@ -81,7 +73,7 @@ E('clico no botão publicar', () => {
 // })
 
 Quando('preencho todos os campos do formulário de adição de página', () => {
-	cy.preencher_titulo(novaPagina.titulo)
+	cy.preencher_titulo_pagina(novaPagina.titulo)
 	cy.preencher_conteudo_pagina(novaPagina.conteudo)
 })
 
@@ -113,12 +105,9 @@ Entao(
 		cy.validar_mensagem_sucesso_ao_postar_pagina()
 	},
 )
-// Entao(
-// 	'devo visualizar a mensagem informando que o post foi atualizado com sucesso',
-// 	() => {
-// 		cy.validar_mensagem_sucesso_ao_atualizar_noticia()
-// 	},
-// )
+Entao('devo visualizar a página publicada no portal da intranet', () => {
+	cy.validar_titulo_pagina_publicada(novaPagina.titulo)
+})
 
 // Entao(
 // 	'devo visualizar a mensagem informando que o campo de subtitulo é obrigatório',
