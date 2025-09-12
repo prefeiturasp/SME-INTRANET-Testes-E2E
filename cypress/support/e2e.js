@@ -1,9 +1,10 @@
 import './commands/commands_login'
 import './commands/commands_globais'
 import './commands/commands_noticias'
+import './commands/commands_paginas'
 
-import '@shelex/cypress-allure-plugin';
-import "cypress-cloud/support";
+import '@shelex/cypress-allure-plugin'
+import 'cypress-cloud/support'
 
 Cypress.on('uncaught:exception', (err, runnable) => {
 	return false

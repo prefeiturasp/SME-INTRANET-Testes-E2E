@@ -10,6 +10,11 @@
       E clico no botão publicar
       Então devo visualizar a mensagem informando que a página foi publicado com sucesso
 
+      Cenário: Deve validar se a página foi publicada no portal da intranet
+      Dado eu publiquei uma página
+      Quando eu clico na URL da página criada
+      Então devo visualizar a página publicada no portal da intranet
+
       # Cenário: Deve validar mensagem de obrigatoriedade do campo de subtitulo
       # Dado eu realizo login na intranet no wp-admin 
       # E acesso a página de adição de notícias
